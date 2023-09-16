@@ -17,6 +17,7 @@ async function fetchLinks() {
 }
 
 async function fetchComments(data) {
+    console.log(data)
     let topComments = []
     const date = new Date()
     let year = date.getFullYear()
@@ -40,8 +41,8 @@ async function fetchComments(data) {
             let day1 = String(commentDate.getDate()).padStart(2, '0');
             let formatted1 = `${year1}-${month1}-${day1}`;
 
-                if (comment.upvotes >= 3 && formatted === formatted1) {
-                    topComments.push(`${comment.text}\n[${comment.upvotes} ⭐] [URL: ${link}]`)
+                if (comment.upvotes >= 2 && formatted === formatted1) {
+                    topComments.push(`💭 ${comment.upvotes} ⭐ ${comment.text}\n\n✍️ [${comment.author.full_name}](https://vas3k.club/user/${comment.author.slug}), ${comment.author.position}\n🔗 ${link}`)
                     console.log(`Added ${comment.text}, sent on ${formatted1} `)
                 }
         }
@@ -59,7 +60,8 @@ async function fetchComments(data) {
         const message = topComments.join('\n\n')
         const response = await axios.post(telegramApiUrl, {
             chat_id: CHAT_ID,
-            text: message
+            text: message,
+            parse_mode: 'Markdown'
         });
     }
 }
@@ -70,5 +72,5 @@ async function main() {
 }
 
 main()
-// or 
+
 // setInterval(main, 86400000) // Run once per day
