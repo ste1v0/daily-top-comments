@@ -42,7 +42,7 @@ async function fetchComments(data) {
             let formatted1 = `${year1}-${month1}-${day1}`;
 
                 if (comment.upvotes >= 2 && formatted === formatted1) {
-                    topComments.push(`💭 ${comment.upvotes} ⭐ ${comment.text}\n\n✍️ [${comment.author.full_name}](https://vas3k.club/user/${comment.author.slug}), ${comment.author.position}\n🔗 ${link}`)
+                    topComments.push(`💭 ${comment.upvotes} ⭐ ${comment.text}\n\n✍️ [${comment.author.full_name}](https://vas3k.club/user/${comment.author.slug}), ${comment.author.position}\n🔗 [Тред](${link})`)
                     console.log(`Added ${comment.text}, sent on ${formatted1} `)
                 }
         }
