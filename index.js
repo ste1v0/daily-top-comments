@@ -45,12 +45,12 @@ async function fetchComments(data) {
             let day1 = String(commentDate.getDate()).padStart(2, '0');
             let formatted1 = `${year1}-${month1}-${day1}`;
 
-                if (comment.upvotes >= 3 && formatted === formatted1) {
+                if (comment.upvotes >= 4 && formatted === formatted1) {
                     topCommentsData.push( {
                         title: link.title,
                         id: comment.id,
                         link: link.threadLink,
-                        commentLink: `${link}/#comment-${comment.id}`,
+                        commentLink: `${link.threadLink}/#comment-${comment.id}`,
                         text: comment.text,
                         author: comment.author.full_name,
                         slug: comment.author.slug,
