@@ -13,12 +13,15 @@ async function fetchLinks() {
         }
     })
     const data = response.data
-    return data.items.map(e => `https://vas3k.club/${e._club.type}/${e._club.slug}`)
+
+    return data.items.map(e => ({
+        threadLink: `https://vas3k.club/${e._club.type}/${e._club.slug}`,
+        title: e.title
+    }))
 }
 
 async function fetchComments(data) {
-    console.log(data)
-    let topComments = []
+    let topCommentsData = []
     const date = new Date()
     let year = date.getFullYear()
     let month = String(date.getMonth() + 1).padStart(2, '0')
@@ -26,7 +29,7 @@ async function fetchComments(data) {
     let formatted = `${year}-${month}-${day}`;
 
     for (let link of data) {
-        const response = await axios.get(`${link}/comments.json`, {
+        const response = await axios.get(`${link.threadLink}/comments.json`, {
             headers: {
                 'X-Service-Token': SERVICE_TOKEN
             }
@@ -35,19 +38,40 @@ async function fetchComments(data) {
         const commentsList = response.data.comments
 
         for (let comment of commentsList) {
+
             const commentDate = new Date(comment.created_at)
             let year1 = commentDate.getFullYear();
             let month1 = String(commentDate.getMonth() + 1).padStart(2, '0')
             let day1 = String(commentDate.getDate()).padStart(2, '0');
             let formatted1 = `${year1}-${month1}-${day1}`;
 
-                if (comment.upvotes >= 2 && formatted === formatted1) {
-                    topComments.push(`💭 ${comment.upvotes} ⭐ ${comment.text}\n\n✍️ [${comment.author.full_name}](https://vas3k.club/user/${comment.author.slug}), ${comment.author.position}\n🔗 [Тред](${link})`)
-                    console.log(`Added ${comment.text}, sent on ${formatted1} `)
+                if (comment.upvotes >= 3 && formatted === formatted1) {
+                    topCommentsData.push( {
+                        title: link.title,
+                        id: comment.id,
+                        link: link.threadLink,
+                        commentLink: `${link}/#comment-${comment.id}`,
+                        text: comment.text,
+                        author: comment.author.full_name,
+                        slug: comment.author.slug,
+                        position: comment.author.position,
+                        company: comment.author.company,
+                        upvotes: comment.upvotes
+                    })
                 }
+
         }
 
     }
+    topCommentsData.sort((a, b) => b.upvotes - a.upvotes)
+
+    let topComments = topCommentsData.map(e => {
+        if (e.text.length > 150) {
+            return `💭 Re: [${e.title}](${e.link})\n\n${e.upvotes} ⭐ ${e.text.substring(0, 150)} ... [продолжение](${e.commentLink})\n\n[${e.author}](https://vas3k.club/user/${e.slug}), ${e.position} @ ${e.company}\n\n`
+        } else {
+            return `💭 Re: [${e.title}](${e.link})\n\n${e.upvotes} ⭐ ${e.text}\n\n[${e.author}](https://vas3k.club/user/${e.slug}), ${e.position} @ ${e.company}\n\n`
+        }
+    })
 
     if (topComments.length > 0) {
         await sendToTelegram(topComments);
@@ -61,7 +85,8 @@ async function fetchComments(data) {
         const response = await axios.post(telegramApiUrl, {
             chat_id: CHAT_ID,
             text: message,
-            parse_mode: 'Markdown'
+            parse_mode: 'Markdown',
+            disable_web_page_preview: true
         });
     }
 }
